@@ -1,0 +1,21 @@
+default:
+  coldspot: 0,0
+  fps: 10
+  gunspot: 0,0
+  origin: 0,0
+  tagged: 0
+frame-000:
+  coldspot: -24,-15
+  gunspot: -52,-24
+  origin: -24,-32
+  tagged: 0
+frame-001:
+  coldspot: -25,-15
+  gunspot: -53,-24
+  origin: -25,-32
+  tagged: 0
+frame-002:
+  coldspot: -24,-16
+  gunspot: -52,-25
+  origin: -24,-33
+  tagged: 0

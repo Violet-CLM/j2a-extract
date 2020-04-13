@@ -1,0 +1,66 @@
+default:
+  coldspot: 0,0
+  fps: 9
+  gunspot: 0,0
+  origin: 0,0
+  tagged: 0
+frame-000:
+  coldspot: -31,-49
+  gunspot: 0,0
+  origin: -31,-23
+  tagged: 0
+frame-001:
+  coldspot: -23,-52
+  gunspot: 0,0
+  origin: -23,-26
+  tagged: 0
+frame-002:
+  coldspot: -23,-48
+  gunspot: 0,0
+  origin: -23,-22
+  tagged: 0
+frame-003:
+  coldspot: -18,-51
+  gunspot: 0,0
+  origin: -18,-25
+  tagged: 0
+frame-004:
+  coldspot: -23,-45
+  gunspot: 0,0
+  origin: -23,-19
+  tagged: 0
+frame-005:
+  coldspot: -28,-49
+  gunspot: 0,0
+  origin: -28,-23
+  tagged: 0
+frame-006:
+  coldspot: -32,-46
+  gunspot: 0,0
+  origin: -32,-20
+  tagged: 0
+frame-007:
+  coldspot: -29,-52
+  gunspot: 0,0
+  origin: -29,-26
+  tagged: 0
+frame-008:
+  coldspot: -30,-49
+  gunspot: 0,0
+  origin: -30,-23
+  tagged: 0
+frame-009:
+  coldspot: -31,-53
+  gunspot: 0,0
+  origin: -31,-27
+  tagged: 0
+frame-010:
+  coldspot: -31,-49
+  gunspot: 0,0
+  origin: -31,-23
+  tagged: 0
+frame-011:
+  coldspot: -31,-51
+  gunspot: 0,0
+  origin: -31,-25
+  tagged: 0
