@@ -50,7 +50,7 @@ from j2a import J2A
 
 cli = argparse.ArgumentParser(description=readme, prog="J2A Creator", formatter_class=argparse.RawDescriptionHelpFormatter)
 cli.add_argument("folder", help="Folder containing animation frames, one folder per animation")
-cli.add_argument("output", help="Output file name")
+cli.add_argument("--output", help="Output file name", default="?")
 cli.add_argument("--yes", "-y", help="Always answer confirmation prompts with 'yes'", default=False,
                  action="store_true")
 args = cli.parse_args()
@@ -61,6 +61,8 @@ if not source_folder.exists():
     print("Folder %s does not exist." % args.folder)
     exit(1)
 
+if args.output == "?":
+    args.output = ".".join(args.folder.rsplit("-", 1))
 output_file = pathlib.Path(args.output)
 
 set_folders = sorted([subfolder for subfolder in source_folder.iterdir() if subfolder.is_dir()])
