@@ -110,8 +110,10 @@ for set_folder in set_folders:
 
         for frame_num, frame_file in enumerate(frame_files):
             image = Image.open(frame_file)
-            if image.mode != "P" and image.mode != "RGBA":
-                print("Frame image %s for animation %s is neither Paletted or RGBA, skipping" % (
+            if image.mode == "RGB":
+                image = image.convert("RGBA")
+            if image.mode != "P" and image.mode != "L" and image.mode != "RGBA":
+                print("Frame image %s for animation %s is neither Paletted, Grayscale, nor RGB(A), skipping" % (
                     frame_file.name, animation_folder.name))
                 continue
 

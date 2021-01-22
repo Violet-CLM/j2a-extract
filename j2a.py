@@ -409,8 +409,12 @@ class J2A:
             self.decode_image()
             mask = bytearray(b'\x00') * ((self.shape[0] * self.shape[1] + 7) // 8)
             pix_iter = itertools.chain(*self._pixmap)
-            for i in range(len(mask)):
-                mask[i] = sum(bool(pix) << j for j, pix in enumerate(take(8, pix_iter)))
+            if not self.truecolor:
+                for i in range(len(mask)):
+                    mask[i] = sum(bool(pix) << j for j, pix in enumerate(take(8, pix_iter)))
+            else:
+                for i in range(len(mask)):
+                    mask[i] = sum(bool(pix[3]) << j for j, pix in enumerate(take(8, pix_iter)))
             self.mask = mask
             return self
 
