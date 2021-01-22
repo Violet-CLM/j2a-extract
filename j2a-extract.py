@@ -30,11 +30,13 @@ from j2a import J2A
 cli = argparse.ArgumentParser(description=readme, prog="J2A Unpacker", formatter_class=argparse.RawDescriptionHelpFormatter)
 cli.add_argument("--palettefile", "-p", default="Diamondus_2.pal", help="Palette file to use")
 cli.add_argument("j2afile", help="The J2A file to extract")
-cli.add_argument("--folder", "-f", default=".",
+cli.add_argument("--folder", "-f", default="?",
                  help="Where to extract the animation data. Defaults to current working directory.")
 args = cli.parse_args()
 
 # check if all files we need exist and can be opened properly
+if args.folder == "?":
+    args.folder = "-".join(args.j2afile.rsplit(".", 1))
 destination_folder = pathlib.Path(args.folder)
 source_file = pathlib.Path(args.j2afile)
 palette_file = pathlib.Path(args.palettefile)
