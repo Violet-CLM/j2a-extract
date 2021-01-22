@@ -110,8 +110,8 @@ for set_folder in set_folders:
 
         for frame_num, frame_file in enumerate(frame_files):
             image = Image.open(frame_file)
-            if image.mode != "P":
-                print("Frame image %s for animation %s is not paletted, skipping" % (
+            if image.mode != "P" and image.mode != "RGBA":
+                print("Frame image %s for animation %s is neither Paletted or RGBA, skipping" % (
                     frame_file.name, animation_folder.name))
                 continue
 
@@ -123,7 +123,8 @@ for set_folder in set_folders:
                 origin=tuple([int(x) for x in frame_settings.get("origin", settings["default"]["origin"]).split(",")]),
                 coldspot=tuple([int(x) for x in frame_settings.get("coldspot", settings["default"]["coldspot"]).split(",")]),
                 gunspot=tuple([int(x) for x in frame_settings.get("gunspot", settings["default"]["gunspot"]).split(",")]),
-                tagged=bool(frame_settings.get("tagged", settings["default"]["tagged"]))
+                tagged=bool(frame_settings.get("tagged", settings["default"]["tagged"])),
+                truecolor=image.mode == "RGBA"
             )
             frame.autogenerate_mask()
 

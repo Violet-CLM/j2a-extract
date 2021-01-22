@@ -202,7 +202,7 @@ class J2A:
                             -1 if no_mask   else len(mask_data)
                         ))
                         width, height = f.shape
-                        img_data += struct.pack("<HH", (width | 0x8000 if f.tagged else width), height)
+                        img_data += struct.pack("<HH", (width | 0x8000 if f.tagged else width), (height | 0x8000 if f.truecolor else height))
 
                         if no_pixmap:
                             null_pixmaps += 1
@@ -283,7 +283,10 @@ class J2A:
                 assert shape is None or shape == pixmap.size
                 self.shape = pixmap.size
                 width, height = pixmap.size
-                self._pixmap = [bytearray(row) for row in grouper(pixmap.tobytes(), width)]
+                if not truecolor:
+                    self._pixmap = [bytearray(row) for row in grouper(pixmap.tobytes(), width)] #bytes
+                else:
+                    self._pixmap = [[tuple(row[n:n+4]) for n in range(0,len(row),4)] for row in grouper(pixmap.tobytes(), width*4)] #tuples
                 assert len(self._pixmap) == height
             else:
                 self._pixmap = pixmap
@@ -352,28 +355,52 @@ class J2A:
         def encode_image(self):
             if not hasattr(self, "_rle_encoded_pixmap"):
                 encoded = bytearray()
-                for row in self._pixmap:
-                    while True:
-                        row = bytearray(row)
-                        length = len(row)
-                        row = row.lstrip(b'\x00')
-                        if not row:
-                            break
-                        length -= len(row)
-                        while length:
-                            m = min(length, 0x7f)
-                            encoded.append(m)
-                            length -= m
-                        length = row.find(b'\x00')
-                        if length == -1:
+                if not self.truecolor:
+                    for row in self._pixmap:
+                        while True:
+                            row = bytearray(row)
                             length = len(row)
-                        while length:
-                            m = min(length, 0x7f)
-                            encoded.append(m ^ 0x80)
-                            encoded += row[:m]
-                            row = row[m:]
-                            length -= m
-                    encoded.append(0x80)
+                            row = row.lstrip(b'\x00')
+                            if not row:
+                                break
+                            length -= len(row)
+                            while length:
+                                m = min(length, 0x7f)
+                                encoded.append(m)
+                                length -= m
+                            length = row.find(b'\x00')
+                            if length == -1:
+                                length = len(row)
+                            while length:
+                                m = min(length, 0x7f)
+                                encoded.append(m ^ 0x80)
+                                encoded += row[:m]
+                                row = row[m:]
+                                length -= m
+                        encoded.append(0x80)
+                else: #truecolor yes
+                    for row in self._pixmap:
+                        while True:
+                            length = len(row)
+                            row = list(itertools.dropwhile(lambda p: p[3] == 0, row))
+                            if not row:
+                                break
+                            length -= len(row)
+                            while length:
+                                m = min(length, 0x7f)
+                                encoded.append(m)
+                                length -= m
+                            length = next(((idx, pixel) for idx,pixel in enumerate(row) if pixel[3] == 0), (-1,-1))[0]
+                            if length == -1:
+                                length = len(row)
+                            while length:
+                                m = min(length, 0x7f)
+                                encoded.append(m ^ 0x80)
+                                encoded += bytearray([channel for pixel in row[:m] for channel in pixel])
+                                row = row[m:]
+                                length -= m
+                        encoded.append(0x80)
+
                 self._rle_encoded_pixmap = encoded
                 del self._pixmap
             return self
