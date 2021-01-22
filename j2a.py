@@ -270,12 +270,12 @@ class J2A:
 
 
     class Frame(object):
-        __slots__ = ["shape", "origin", "coldspot", "gunspot", "_pixmap", "mask", "_rle_encoded_pixmap", "tagged"]
+        __slots__ = ["shape", "origin", "coldspot", "gunspot", "_pixmap", "mask", "_rle_encoded_pixmap", "tagged", "truecolor"]
         _Header = misc.NamedStruct("H|width/H|height/h|coldspotx/h|coldspoty/h|hotspotx/h|hotspoty/h|gunspotx/h|gunspoty/l|imageoffset/l|maskoffset")
 
-        def __init__(self, shape=None, origin=None, coldspot=(0,0), gunspot=(0,0), pixmap=None, mask=None, rle_encoded_pixmap=None, tagged=False):
+        def __init__(self, shape=None, origin=None, coldspot=(0,0), gunspot=(0,0), pixmap=None, mask=None, rle_encoded_pixmap=None, tagged=False, truecolor=False):
             assert (pixmap is None) ^ (rle_encoded_pixmap is None)
-            self.shape, self.origin, self.coldspot, self.gunspot, self.mask, self.tagged = shape, origin, coldspot, gunspot, mask, tagged
+            self.shape, self.origin, self.coldspot, self.gunspot, self.mask, self.tagged, self.truecolor = shape, origin, coldspot, gunspot, mask, tagged, truecolor
             if not rle_encoded_pixmap is None:
                 assert not shape is None
                 self._rle_encoded_pixmap = bytearray(rle_encoded_pixmap)
@@ -299,6 +299,8 @@ class J2A:
             width, height = struct.unpack_from("<HH", imagedata)
             tagged = bool(width & 0x8000)
             width &= 0x7FFF
+            truecolor = bool(height & 0x8000)
+            height &= 0x7FFF
             assert width == frameinfo["width"] and height == frameinfo["height"]
             return J2A.Frame(
                 shape = (width, height),
@@ -307,7 +309,8 @@ class J2A:
                 gunspot = (frameinfo["gunspotx"], frameinfo["gunspoty"]),
                 rle_encoded_pixmap = imagedata[4:],
                 mask = maskdata,
-                tagged = tagged
+                tagged = tagged,
+                truecolor = truecolor
             )
 
         # TODO: need to stress test these two methods
@@ -326,9 +329,14 @@ class J2A:
                     if byte > 128:
                         byte -= 128
                         l = min(byte, width - x)
-                        pixmap[y][x:x+l] = raw[i+1:i+1+l]
+                        if not self.truecolor:
+                            pixmap[y][x:x+l] = raw[i+1:i+1+l]
+                            i += byte
+                        else:
+                            for p in range(l):
+                                pixmap[y][x+p] = tuple(raw[i+1+p*4:i+1+(p+1)*4])
+                            i += byte * 4
                         x += byte
-                        i += byte
                     elif byte < 128:
                         x += byte
                     else:
@@ -576,23 +584,31 @@ class J2A:
 
     def render_pixelmap(self, frame):
         img = Image.new("RGBA", frame.shape)
-        im = img.load()
-        pal = self.get_palette()
+        pixelmap = frame.decode_image()._pixmap
+        if not frame.truecolor:
+            im = img.load()
+            pal = self.get_palette()
 
-        for x, row in enumerate(frame.decode_image()._pixmap):
-            for y, index in enumerate(row):
-                if index > 1:
-                    im[y, x] = pal[index]
+            for x, row in enumerate(pixelmap):
+                for y, index in enumerate(row):
+                    if index > 1:
+                        im[y, x] = pal[index]
+        else:
+            img.putdata([pixel for col in pixelmap for pixel in col])
 
         return img
 
     def render_paletted_pixelmap(self, frame):
         pixelmap = frame.decode_image()._pixmap
         img = Image.new("P", frame.shape)
-        img.putdata([pixel for col in pixelmap for pixel in col])
         self.get_palette()
         img.putpalette(self.palettesequence)
+        if not frame.truecolor:
+            img.putdata([pixel for col in pixelmap for pixel in col])
         return img
+
+    def render_bitdepth_appropriate_pixelmap(self, frame):
+        return self.render_paletted_pixelmap(frame) if not frame.truecolor else self.render_pixelmap(frame)
 
     def get_frame(self, set_num, anim_num, frame_num):
         ''' gets image info and image corresponding to a specific set, animation and frame number '''

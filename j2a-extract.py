@@ -80,7 +80,7 @@ for set_index, set in enumerate(j2afile.sets):
                 "tagged": {False: 0, True: 1}[frame.tagged]
             }
 
-            j2afile.render_paletted_pixelmap(frame).save(str(frame_file))
+            j2afile.render_bitdepth_appropriate_pixelmap(frame).save(str(frame_file))
 
         with settings_file.open("w") as settings_output:
             yaml.dump(settings, settings_output)
