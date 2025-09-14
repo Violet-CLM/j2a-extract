@@ -15,4 +15,4 @@ for instance if you call this with `C:\Games\Jazz2\Anims.j2a`, the output will b
 
 To generate a new J2A file from unpacked data:
 
-> python j2a-import.py <path_to_anims_folder> <new_anims_file>
+> python j2a-import.py <path_to_anims_folder> --output <new_anims_file>
